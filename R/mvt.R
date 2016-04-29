@@ -62,7 +62,8 @@ checkmvArgs <- function(lower, upper, mean, corr, sigma)
                    stop(sQuote("corr"), " and ", sQuote("lower"),
                         " are of different length")
              } else {
-                 if (length(diag(corr)) != length(lower))
+#                 if (length(diag(corr)) != length(lower))
+                 if (ncol(corr) != length(lower))
                      stop(sQuote("diag(corr)"), " and ", sQuote("lower"),
                           " are of different length")
                  if (!chkcorr(corr))
@@ -87,11 +88,12 @@ checkmvArgs <- function(lower, upper, mean, corr, sigma)
                   stop(sQuote("sigma"), " and ", sQuote("lower"),
                        " are of different length")
             } else {
-              if (length(diag(sigma)) != length(lower))
+#              if (length(diag(sigma)) != length(lower))
+              if (ncol(sigma) != length(lower))
                  stop(sQuote("diag(sigma)"), " and ", sQuote("lower"),
                       " are of different length")
-              if (!isTRUE(all.equal(sigma, t(sigma))) || any(diag(sigma) < 0))
-                 stop(sQuote("sigma"), " is not a covariance matrix")
+#              if (!isTRUE(all.equal(sigma, t(sigma))) || any(diag(sigma) < 0))
+#                 stop(sQuote("sigma"), " is not a covariance matrix")
             }
          }
     }
@@ -121,8 +123,10 @@ pmvnorm <- function(lower=-Inf, upper=Inf, mean=rep(0, length(lower)), corr=NULL
                             pnorm(carg$lower, mean=carg$mean, sd=sqrt(carg$sigma)),
                     error = 0, msg="univariate: using pnorm")
       } else {
-          lower <- (carg$lower - carg$mean)/sqrt(diag(carg$sigma))
-          upper <- (carg$upper - carg$mean)/sqrt(diag(carg$sigma))
+          sigma_dim <- ncol(carg$sigma)
+          diag_sigma_inds <- cbind(seq_len(sigma_dim), seq_len(sigma_dim))
+          lower <- (carg$lower - carg$mean)/sqrt(carg$sigma[diag_sigma_inds])
+          upper <- (carg$upper - carg$mean)/sqrt(carg$sigma[diag_sigma_inds])
           mean <- rep(0, length(lower))
           corr <- cov2cor(carg$sigma)
           RET <- mvt(lower=lower, upper=upper, df=0, corr=corr, delta=mean,
